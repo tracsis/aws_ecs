@@ -1,4 +1,4 @@
-# aws_ecs-cookbook Cookbook
+# aws_ecs-cookbook Cookbook [![Build Status](https://travis-ci.org/evertrue/aws_ecs-cookbook.svg?branch=master)](https://travis-ci.org/evertrue/aws_ecs-cookbook)
 
 Adds all requirements for AWS EC2 Container Service
 
