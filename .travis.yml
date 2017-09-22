@@ -1,0 +1,48 @@
+language: ruby
+rvm:
+- 2.2
+sudo: required
+cache:
+  directories:
+  - $HOME/.berkshelf
+addons:
+  apt:
+    sources:
+    - chef-stable-precise
+    packages:
+    - chefdk
+before_install:
+- openssl aes-256-cbc -K $encrypted_b7ae02b0cd47_key -iv $encrypted_b7ae02b0cd47_iv
+  -in secrets.tar.enc -out secrets.tar -d
+- tar xvf secrets.tar
+- mv .chef ~/.chef
+- mv .ssh/travis_ci_ec2.pem ~/.ssh/travis_ci_ec2.pem
+- mv .ssh/travis_github ~/.ssh/id_rsa
+- mv .ssh/trubot.pem ~/.chef/trubot.pem
+- echo 'node_name "trubot"' >> ~/.chef/knife.rb
+- echo 'client_key "~/.chef/trubot.pem"' >> ~/.chef/knife.rb
+- echo 'chef_server_url "https://api.opscode.com/organizations/evertrue"' >> ~/.chef/knife.rb
+- chmod 600 ~/.chef/knife.rb ~/.chef/trubot.pem ~/.chef/encrypted_data_bag_secret
+  ~/.ssh/travis_ci_ec2.pem ~/.ssh/id_rsa
+install:
+- eval "$(${CHEF_BIN}/chef shell-init bash)"
+- "${CHEF_BIN}/chef gem install kitchen-ec2 coveralls"
+before_script:
+- "${CHEF_BIN}/berks"
+- "${CHEF_BIN}/chef --version"
+- "${CHEF_BIN}/rubocop --version"
+- "${CHEF_BIN}/foodcritic --version"
+script:
+- "${CHEF_BIN}/rubocop"
+- "${CHEF_BIN}/foodcritic ."
+- "${CHEF_BIN}/chef exec rspec --format documentation --color"
+- "${CHEF_BIN}/kitchen test -d always -c"
+notifications:
+  slack:
+    secure: luojFHn2IidDB4B1NSmW+D5hbs1WY42ACYO6EPGLk9dBOQTVplIfNqXuonJiLTHzPcs7lQxjR/G4CwFgfxrM2beQoiVftnYeo8/YlQ8YYYNAt1nCe8LqsDeYXdhN8XskgqJ141VeL4nGeegjg0WVJYGnNJU+hb3wU0lqrTr8tu8=
+env:
+  global:
+  - CHEF_BIN=/opt/chefdk/bin
+  - EC2_SSH_KEY_PATH="${HOME}/.ssh/travis_ci_ec2.pem"
+  - secure: I5FIAo1QU7IbuaEgGu2+v7DoZsoT5SH2dtPoPupL03e2pv8jEhugHdKJuwYjIjmK5f0Bmm4ivhEPDbZ7Leky8tvtzJ5rm9KKk9iv0L8239dcjqdCjXtsd+UkBDdqwR5aGTeFx5p21zNuHoqAuJ4VZdJHeqzrMGKE7biLzxWutmk=
+  - secure: ltE+AjhhY7p1wOQhaWnG5UMozxsXlZSxzlGec0LUsS3ik8GIidkNlXJlTY8QjH55Ju6lCpCuDeadvaom7zksQ3v0+RYTvxscQ7XznxGf8Oz1GuyIK3txX5EiswG0SUiQKh4aweThjX1NEovKFvvWoeCQTskPOQh3EnwvIfhOauc=
