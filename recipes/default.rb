@@ -63,6 +63,10 @@ docker_container 'ecs-agent' do
   action :run
 end
 
+sysctl_param 'net.ipv4.conf.all.route_localnet' do
+  value 1
+end
+
 iptables_rule 'host_iam_dnat_51679' do
   lines '-A PREROUTING -p tcp -d 169.254.170.2 --dport 80 -j DNAT --to-destination 127.0.0.1:51679'
   table :nat
